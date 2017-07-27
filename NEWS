@@ -3,6 +3,7 @@ Knot Resolver 2.X.Y (2018-0M-DD)
 
 Incompatible changes
 --------------------
+- stats: remove tracking of expiring records (predict uses another way)
 - systemd: more chages in default unit files (TODO)
 
 Bugfixes
