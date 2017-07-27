@@ -15,6 +15,10 @@ Bugfixes
 - fix the hints module on some systems, e.g. Fedora (came back on 2.0.0)
 - build with older gnutls (conditionally disable features)
 
+Improvements
+------------
+- predict module: consider about 7% TTL to be expiring, instead of 1%
+
 
 Knot Resolver 2.0.0 (2018-01-31)
 ================================

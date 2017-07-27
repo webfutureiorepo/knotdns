@@ -138,11 +138,16 @@ int answer_from_pkt(kr_layer_t *ctx, knot_pkt_t *pkt, uint16_t type,
 		const struct entry_h *eh, const void *eh_bound, uint32_t new_ttl);
 
 
-/** Record is expiring if it has less than 1% TTL (or less than 5s) */
+/** Record is expiring if it has roughly less than 7% of original TTL.
+ *
+ * Example expirations: < 5s always, < ~9s for 60s TTL,
+ *     < 3.8 min. with 1h TTL, < 6.25% TTL asymptotically.
+ * Sync: ../../modules/predict/README.rst
+ */
 static inline bool is_expiring(uint32_t orig_ttl, uint32_t new_ttl)
 {
 	int64_t nttl = new_ttl; /* avoid potential over/under-flow */
-	return 100 * (nttl - 5) < orig_ttl;
+	return 16 * (nttl - KR_CACHE_DEFAULT_TTL_MIN) < orig_ttl;
 }
 
 /** Returns signed result so you can inspect how much stale the RR is.
