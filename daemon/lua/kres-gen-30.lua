@@ -199,6 +199,7 @@ struct kr_extended_error {
 	int32_t info_code;
 	const char *extra_text;
 };
+typedef unsigned long kr_rule_tags_t;
 struct kr_request {
 	struct kr_context *ctx;
 	knot_pkt_t *answer;
@@ -238,8 +239,12 @@ struct kr_request {
 	} selection_context;
 	unsigned int count_no_nsaddr;
 	unsigned int count_fail_row;
+<<<<<<< HEAD:daemon/lua/kres-gen-30.lua
 	alloc_wire_f alloc_wire_cb;
 	struct kr_extended_error extended_error;
+=======
+	kr_rule_tags_t rule_tags;
+>>>>>>> 9d454fe11 (WIP: first prototype):daemon/lua/kres-gen.lua
 };
 enum kr_rank {KR_RANK_INITIAL, KR_RANK_OMIT, KR_RANK_TRY, KR_RANK_INDET = 4, KR_RANK_BOGUS, KR_RANK_MISMATCH, KR_RANK_MISSING, KR_RANK_INSECURE, KR_RANK_AUTH = 16, KR_RANK_SECURE = 32};
 typedef struct kr_cdb * kr_cdb_pt;

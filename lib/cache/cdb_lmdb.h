@@ -7,8 +7,12 @@
 #include "lib/cache/cdb_api.h"
 #include "lib/defines.h"
 
+/** Get API implementation for LMDB.
+ *
+ * The properties differ a bit based on whether it's meant for cache or rule DB.
+ */
 KR_EXPORT KR_CONST
-const struct kr_cdb_api *kr_cdb_lmdb(void);
+const struct kr_cdb_api *kr_cdb_lmdb(bool is_cache);
 
 /** Create a pointer for knot_db_lmdb_api.  You free() it to release it. */
 KR_EXPORT
