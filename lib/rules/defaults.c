@@ -4,6 +4,7 @@
 
 #include "lib/rules/impl.h"
 #include "lib/rules/api.h"
+#include "lib/utils.h"
 
 int rules_defaults_insert(void)
 {
@@ -132,10 +133,8 @@ int rules_defaults_insert(void)
 		const knot_dname_t *dname =
 			knot_dname_from_str(name_buf, names[i], sizeof(name_buf));
 		int ret = kr_rule_local_data_emptyzone(dname, KR_RULE_TAGS_ALL);
-		if (ret) {
-			assert(!ret);
+		if (kr_fails_assert(!ret))
 			return kr_error(ret);
-		}
 		/* The double conversion is perhaps a bit wasteful, but it should be rare. */
 		/* LATER: add extra info with explanation?  policy module had an ADDITIONAL
 		 * record with explanation, but perhaps extended errors are more suitable?
@@ -159,10 +158,8 @@ int rules_defaults_insert(void)
 						1+9+1, NULL);
 		if (!ret) ret = kr_rule_local_data_ins(&rr, NULL, KR_RULE_TAGS_ALL);
 		knot_rdataset_clear(&rr.rrs, NULL);
-		if (ret) {
-			assert(!ret);
+		if (kr_fails_assert(!ret))
 			return kr_error(ret);
-		}
 	}
 
 	return kr_ok();

@@ -74,7 +74,7 @@ int kr_rules_init()
 	 * LATER: "\0stamp" key when loading config(s). Also make it include versioning? */
 	if (ret == 0) ret = ruledb_op(clear);
 	if (ret != 0) goto failure;
-	assert(the_rules->db);
+	kr_require(the_rules->db);
 
 	ret = rules_defaults_insert();
 	if (ret != 0) goto failure;
@@ -104,9 +104,8 @@ struct kr_request;
 static bool kr_rule_consume_tags(knot_db_val_t *val, const struct kr_request *req)
 {
 	const size_t tl = sizeof(kr_rule_tags_t);
-	if (val->len < tl) {
+	if (kr_fails_assert(val->len >= tl)) {
 		val->len = 0;
-		assert(false);
 		/* We may not fail immediately, but further processing
 		 * will fail anyway due to zero remaining length. */
 		return false;
@@ -143,7 +142,7 @@ static size_t key_common_prefix(knot_db_val_t k1, knot_db_val_t k2)
 {
 	const size_t maxlen = MAX(k1.len, k2.len);
 	const uint8_t *data1 = k1.data, *data2 = k2.data;
-	assert(maxlen == 0 || (data1 && data2));
+	kr_require(maxlen == 0 || (data1 && data2));
 	ssize_t i;
 	for (i = 0; i < maxlen; ++i) {
 		if (data1[i] != data2[i])
@@ -195,7 +194,7 @@ int kr_rule_local_data_answer(struct kr_query *qry, knot_pkt_t *pkt)
 	while (rulesets.len > 0) {
 		{ /* Write ruleset-specific prefix of the key. */
 			const size_t rsp_len = strnlen(rulesets_str, rulesets.len);
-			assert(rsp_len <= KEY_RULESET_MAXLEN - 1);
+			kr_require(rsp_len <= KEY_RULESET_MAXLEN - 1);
 			key.data -= rsp_len;
 			memcpy(key.data, rulesets_str, rsp_len);
 			rulesets_str += rsp_len + 1;
@@ -234,7 +233,7 @@ int kr_rule_local_data_answer(struct kr_query *qry, knot_pkt_t *pkt)
 		key.len = key_data + KEY_DNAME_END_OFFSET - (uint8_t *)key.data;
 		const size_t lf_start_i = key_data_ruleset_end + sizeof(KEY_ZONELIKE_A)
 					- (const uint8_t *)key.data;
-		assert(lf_start_i < KEY_MAXLEN);
+		kr_require(lf_start_i < KEY_MAXLEN);
 		knot_db_val_t key_leq = key;
 		knot_db_val_t val;
 		// LATER: again, use cursor to iterate over multiple rules on the same key.
@@ -259,7 +258,7 @@ int kr_rule_local_data_answer(struct kr_query *qry, knot_pkt_t *pkt)
 			if (!kr_rule_consume_tags(&val, qry->request)) {
 				/* Shorten key_leq by one label and retry. */
 				if (key_leq.len <= lf_start_i) { // nowhere to shorten
-					assert(key_leq.len == lf_start_i);
+					kr_assert(key_leq.len == lf_start_i);
 					break;
 				}
 				const char *data = key_leq.data;
@@ -286,7 +285,7 @@ int kr_rule_local_data_answer(struct kr_query *qry, knot_pkt_t *pkt)
 }
 
 #define CHECK_RET(ret) do { \
-	if ((ret) < 0) { assert(false); return kr_error((ret)); } \
+	if ((ret) < 0) { kr_assert(false); return kr_error((ret)); } \
 } while (false)
 
 static int answer_exact_match(struct kr_query *qry, knot_pkt_t *pkt, uint16_t type,
@@ -294,10 +293,8 @@ static int answer_exact_match(struct kr_query *qry, knot_pkt_t *pkt, uint16_t ty
 {
 	/* Extract ttl from data. */
 	uint32_t ttl;
-	if (data + sizeof(ttl) > data_bound) {
-		assert(!EILSEQ);
+	if (kr_fails_assert(data + sizeof(ttl) <= data_bound))
 		return kr_error(EILSEQ);
-	}
 	memcpy(&ttl, data, sizeof(ttl));
 	data += sizeof(ttl);
 
@@ -310,10 +307,8 @@ static int answer_exact_match(struct kr_query *qry, knot_pkt_t *pkt, uint16_t ty
 	/* Materialize the base RRset.
 	 * Error handling: we assume it's OK to leak a bit memory from pkt->mm. */
 	arrset.set.rr = knot_rrset_new(qry->sname, type, KNOT_CLASS_IN, ttl, &pkt->mm);
-	if (!arrset.set.rr) {
-		assert(!ENOMEM);
+	if (kr_fails_assert(arrset.set.rr))
 		return kr_error(ENOMEM);
-	}
 	ret = rdataset_materialize(&arrset.set.rr->rrs, data, data_bound, &pkt->mm);
 	CHECK_RET(ret);
 	const size_t data_off = ret;
@@ -325,10 +320,9 @@ static int answer_exact_match(struct kr_query *qry, knot_pkt_t *pkt, uint16_t ty
 	CHECK_RET(ret);
 
 	/* Sanity check: we consumed exactly all data. */
-	int unused_bytes = data_bound - data - data_off - ret;
-	if (unused_bytes) {
+	const int unused_bytes = data_bound - data - data_off - ret;
+	if (kr_fails_assert(unused_bytes == 0)) {
 		kr_log_error(RULES, "ERROR: unused bytes: %d\n", unused_bytes);
-		kr_assert(false);
 		return kr_error(EILSEQ);
 	}
 
@@ -386,9 +380,8 @@ int kr_rule_local_data_ins(const knot_rrset_t *rrs, const knot_rdataset_t *sig_r
 static int answer_zla_empty(struct kr_query *qry, knot_pkt_t *pkt,
 				const knot_db_val_t zla_lf, const knot_db_val_t val)
 {
-	if (val.len) {
+	if (kr_fails_assert(val.len == 0)) {
 		kr_log_error(RULES, "ERROR: unused bytes: %zu\n", val.len);
-		kr_assert(false);
 		return kr_error(EILSEQ);
 	}
 
@@ -412,12 +405,10 @@ static int answer_zla_empty(struct kr_query *qry, knot_pkt_t *pkt,
 	const bool want_NS = name_matches && qry->stype == KNOT_RRTYPE_NS;
 	arrset.set.rr = knot_rrset_new(apex_name, want_NS ? KNOT_RRTYPE_NS : KNOT_RRTYPE_SOA,
 					KNOT_CLASS_IN, RULE_TTL_DEFAULT, &pkt->mm);
-	if (!arrset.set.rr) {
-		assert(!ENOMEM);
+	if (kr_fails_assert(arrset.set.rr))
 		return kr_error(ENOMEM);
-	}
 	if (want_NS) {
-		assert(zla_lf.len + 2 == knot_dname_size(apex_name));
+		kr_require(zla_lf.len + 2 == knot_dname_size(apex_name));
 		ret = knot_rrset_add_rdata(arrset.set.rr, apex_name, zla_lf.len + 2, &pkt->mm);
 	} else {
 		ret = knot_rrset_add_rdata(arrset.set.rr, soa_rdata,
