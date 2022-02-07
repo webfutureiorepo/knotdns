@@ -254,6 +254,7 @@ static int add_pair(struct kr_zonecut *hints, const char *name, const char *addr
 	}
 	if (ret == KNOT_EOK) {
 		ret = kr_rule_local_data_ins(&rrs, NULL, KR_RULE_TAGS_ALL);
+		// FIXME: this does not respect (use_nodata == true) which is default
 	}
 	knot_rdataset_clear(&rrs.rrs, NULL);
 	return ret;
