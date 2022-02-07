@@ -372,7 +372,10 @@ static int cdb_open_env(bool is_cache, struct lmdb_env *env,
 	if (ret != MDB_SUCCESS) goto error_mdb;
 
 
-	const unsigned dbi_flags = is_cache ? 0 : MDB_DUPSORT;
+	//FIXME: perhaps we want MDB_DUPSORT in future,
+	//  but for that we'd have to avoid MDB_RESERVE.
+	//  (including a proper assertion, instead of sometimes-crash inside lmdb)
+	const unsigned dbi_flags = 0; //is_cache ? 0 : MDB_DUPSORT;
 	ret = mdb_dbi_open(txn, NULL, dbi_flags, &env->dbi);
 	if (ret != MDB_SUCCESS) {
 		mdb_txn_abort(txn);
