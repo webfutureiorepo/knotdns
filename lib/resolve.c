@@ -621,22 +621,20 @@ static int query_finalize(struct kr_request *request, struct kr_query *qry, knot
 	if (ret) return ret;
 	ret = edns_create(pkt, request);
 	if (ret) return ret;
+	const knot_pkt_t *src_pkt = request->qsource.packet;
 	if (qry->flags.STUB) {
-		/* Stub resolution (ask for +rd and +do) */
 		knot_wire_set_rd(pkt->wire);
-		if (knot_pkt_has_dnssec(request->qsource.packet)) {
+		if (knot_pkt_has_dnssec(src_pkt))
 			knot_edns_set_do(pkt->opt_rr);
-		}
-		if (knot_wire_get_cd(request->qsource.packet->wire)) {
+		if (knot_wire_get_cd(src_pkt->wire))
 			knot_wire_set_cd(pkt->wire);
-		}
-	} else {
-		/* Full resolution (ask for +cd and +do) */
+	} else if (qry->flags.FORWARD) {
+		knot_wire_set_rd(pkt->wire);
 		knot_edns_set_do(pkt->opt_rr);
-		knot_wire_set_cd(pkt->wire);
-		if (qry->flags.FORWARD) {
-			knot_wire_set_rd(pkt->wire);
-		}
+		if (knot_wire_get_cd(src_pkt->wire))
+			knot_wire_set_cd(pkt->wire);
+	} else {
+		knot_edns_set_do(pkt->opt_rr);
 	}
 	return kr_ok();
 }
