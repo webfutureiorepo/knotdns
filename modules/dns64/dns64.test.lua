@@ -34,6 +34,7 @@ local function wait_resolve(qname, qtype)
 end
 
 -- test builtin rules
+--[[
 local function test_builtin_rules()
 	local rcode, answers = wait_resolve('dns64.example', kres.type.AAAA)
 	same(rcode, kres.rcode.NOERROR, 'dns64.example returns NOERROR')
@@ -44,6 +45,7 @@ local function test_builtin_rules()
 		same(rr, expect, 'dns64.example synthesised correct AAAA record')
 	end
 end
+--]]
 
 -- plan tests
 local tests = {
