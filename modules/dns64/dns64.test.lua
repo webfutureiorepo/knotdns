@@ -1,4 +1,5 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
+--[[
 local condition = require('cqueues.condition')
 
 -- setup resolver
@@ -34,7 +35,6 @@ local function wait_resolve(qname, qtype)
 end
 
 -- test builtin rules
---[[
 local function test_builtin_rules()
 	local rcode, answers = wait_resolve('dns64.example', kres.type.AAAA)
 	same(rcode, kres.rcode.NOERROR, 'dns64.example returns NOERROR')
