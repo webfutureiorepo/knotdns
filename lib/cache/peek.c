@@ -464,6 +464,7 @@ static int answer_dname_hit(struct kr_query *qry, knot_pkt_t *pkt, const knot_dn
 
 	/* Generate CNAME RRset for the answer in (pseudo-)packet. */
 	const int AR_CNAME = AR_SOA;
+	ans.rrsets[AR_CNAME].set.rank = ans.rrsets[AR_ANSWER].set.rank;
 	knot_rrset_t *rr = ans.rrsets[AR_CNAME].set.rr
 		= knot_rrset_new(qry->sname, KNOT_RRTYPE_CNAME, KNOT_CLASS_IN,
 				 new_ttl, ans.mm);
