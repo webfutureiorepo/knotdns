@@ -36,7 +36,7 @@ struct kr_rules *the_rules = NULL;
 	-> zone-like apex (on the given name)
  */
 
-const int KEY_RULESET_MAXLEN = 16; /**< max. len of ruleset ID + 1(for kind) */
+#define KEY_RULESET_MAXLEN 16 /**< max. len of ruleset ID + 1(for kind) */
 static /*const*/ char RULESET_DEFAULT[] = "d";
 
 static const uint8_t KEY_EXACT_MATCH[1] = "e";
