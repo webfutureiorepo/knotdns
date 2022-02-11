@@ -229,6 +229,22 @@ static const knot_dname_t * addr2reverse(const char *addr)
 				kr_inaddr_family(&ia.ip));
 }
 
+static int add_pair_root(struct kr_zonecut *hints, const char *name, const char *addr)
+{
+	/* Build key */
+	knot_dname_t key[KNOT_DNAME_MAXLEN];
+	if (!knot_dname_from_str(key, name, sizeof(key))) {
+		return kr_error(EINVAL);
+	}
+	knot_dname_to_lower(key);
+
+	union kr_sockaddr ia;
+	if (parse_addr_str(&ia, addr) != 0) {
+		return kr_error(EINVAL);
+	}
+	return kr_zonecut_add(hints, key, kr_inaddr(&ia.ip), kr_inaddr_len(&ia.ip));
+}
+
 static int add_pair(struct kr_zonecut *hints, const char *name, const char *addr)
 {
 	/* Build key */
@@ -258,8 +274,6 @@ static int add_pair(struct kr_zonecut *hints, const char *name, const char *addr
 	}
 	knot_rdataset_clear(&rrs.rrs, NULL);
 	return ret;
-	
-	//return kr_zonecut_add(hints, key, kr_inaddr(&ia.ip), kr_inaddr_len(&ia.ip));
 }
 
 static int add_reverse_pair(struct kr_zonecut *hints, const char *name, const char *addr)
@@ -526,8 +540,12 @@ static void unpack_hint(struct kr_zonecut *root_hints, JsonNode *table, const ch
 	JsonNode *node = NULL;
 	json_foreach(node, table) {
 		switch(node->tag) {
-		case JSON_STRING: add_pair(root_hints, name ? name : node->key, node->string_); break;
-		case JSON_ARRAY: unpack_hint(root_hints, node, name ? name : node->key); break;
+		case JSON_STRING:
+			add_pair_root(root_hints, name ? name : node->key, node->string_);
+			break;
+		case JSON_ARRAY:
+			unpack_hint(root_hints, node, name ? name : node->key);
+			break;
 		default: continue;
 		}
 	}
@@ -549,7 +567,6 @@ static char* hint_root(void *env, struct kr_module *module, const char *args)
 	if (args && args[0] != '\0') {
 		JsonNode *root_node = json_decode(args);
 		kr_zonecut_set(root_hints, (const uint8_t *)"");
-		abort(); // FIXME: add_pair inside isn't suitable for root hints (ATM)
 		unpack_hint(root_hints, root_node, NULL);
 		json_delete(root_node);
 	}
