@@ -124,8 +124,8 @@ static bool kr_rule_consume_tags(knot_db_val_t *val, const struct kr_request *re
 
 /** When constructing a key, it's convenient that the dname_lf ends on a fixed offset.
  * Convention: the end here is before the final '\0' byte (if any). */
-const int KEY_DNAME_END_OFFSET = KEY_RULESET_MAXLEN + KNOT_DNAME_MAXLEN;
-const int KEY_MAXLEN = KEY_DNAME_END_OFFSET + 64; //TODO: most of 64 is unused ATM
+#define KEY_DNAME_END_OFFSET (KEY_RULESET_MAXLEN + KNOT_DNAME_MAXLEN)
+#define KEY_MAXLEN (KEY_DNAME_END_OFFSET + 64) //TODO: most of 64 is unused ATM
 
 /** Add name lookup format on the fixed end-position inside key_data.
  *
