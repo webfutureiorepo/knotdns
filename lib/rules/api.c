@@ -140,29 +140,35 @@ static inline uint8_t * key_dname_lf(const knot_dname_t *name, uint8_t *key_data
 /** Return length of the common prefix of two strings (knot_db_val_t). */
 static size_t key_common_prefix(knot_db_val_t k1, knot_db_val_t k2)
 {
-	const size_t maxlen = MAX(k1.len, k2.len);
+	const size_t len = MIN(k1.len, k2.len);
 	const uint8_t *data1 = k1.data, *data2 = k2.data;
-	kr_require(maxlen == 0 || (data1 && data2));
-	ssize_t i;
-	for (i = 0; i < maxlen; ++i) {
+	kr_require(len == 0 || (data1 && data2));
+	for (ssize_t i = 0; i < len; ++i) {
 		if (data1[i] != data2[i])
-			break;
+			return i;
 	}
-	return i;
+	return len;
 }
 
 /** Find common "subtree" of two strings that both end in a dname_lf ('\0' terminator excluded).
  *
- * Note: return value < lf_start can happen - mismatch happened before LF. */
+ * Note: return value < lf_start can happen - mismatch happened before LF.
+ * Function reviewed thoroughly, including the dependency.
+ */
 static size_t key_common_subtree(knot_db_val_t k1, knot_db_val_t k2, size_t lf_start_i)
 {
 	ssize_t i = key_common_prefix(k1, k2);
-	if (i == k1.len || i == k2.len)
+	// beware: '\0' at the end is excluded
+	if ((i == k1.len && i == k2.len) || i == 0)
 		return i;
 	const char *data = k1.data;
-	while (i > lf_start_i && data[i] != '\0')
+	do {
 		--i;
-	return i;
+		if (i < lf_start_i)
+			return i;
+		if (data[i] == '\0')
+			return i;
+	} while (true);
 }
 
 int kr_rule_local_data_answer(struct kr_query *qry, knot_pkt_t *pkt)
@@ -249,6 +255,7 @@ int kr_rule_local_data_answer(struct kr_query *qry, knot_pkt_t *pkt)
 					key_leq.len = cs_len;
 					continue;
 				}
+				kr_assert(cs_len == key_leq.len);
 			}
 			const knot_db_val_t zla_lf = {
 				.data = key_leq.data + lf_start_i,
