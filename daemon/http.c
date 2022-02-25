@@ -234,7 +234,7 @@ static int process_uri_path(struct http_ctx *ctx, const char* path, int32_t stre
 	ret = kr_base64url_decode((uint8_t*)beg, end - beg, dest, remaining);
 	if (ret < 0) {
 		ctx->buf_pos = 0;
-		kr_log_debug(DOH, "[%p] base64url decode failed %s\n", (void *)ctx->h2, strerror(ret));
+		kr_log_debug(DOH, "[%p] base64url decode failed %s\n", (void *)ctx->h2, kr_strerror(ret));
 		return ret;
 	}
 
