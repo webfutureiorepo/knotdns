@@ -104,6 +104,7 @@ class ServerSchema(SchemaNode):
         groupid: Additional identifier in case more DNS resolvers are running on single machine.
         nsid: Name Server Identifier (RFC 5001) which allows DNS clients to request resolver to send back its NSID along with the reply to a DNS request.
         workers: The number of running kresd (Knot Resolver daemon) workers. If set to 'auto', it is equal to number of CPUs available.
+        max_workers: The maximum number of running processes at the same time. If set to 'auto', it is equal to 10 times the number of CPUs available.
         use_cache_gc: Use (start) kres-cache-gc (cache garbage collector) automatically.
         backend: Forces the manager to use a specific service supervisor.
         watchdog: Disable systemd watchdog, enable with defaults or set new configuration. Can only be used with 'systemd' backend.
@@ -116,6 +117,7 @@ class ServerSchema(SchemaNode):
         groupid: str = "m"
         nsid: Optional[str] = None
         workers: Union[Literal["auto"], IntPositive] = IntPositive(1)
+        max_workers: Union[Literal["auto"], IntPositive] = "auto"
         use_cache_gc: bool = True
         backend: BackendEnum = "auto"
         watchdog: Union[bool, WatchDogSchema] = True
@@ -129,6 +131,7 @@ class ServerSchema(SchemaNode):
     groupid: str
     nsid: Optional[str]
     workers: IntPositive
+    max_workers: IntPositive
     use_cache_gc: bool
     backend: BackendEnum = "auto"
     watchdog: Union[bool, WatchDogSchema]
@@ -146,14 +149,21 @@ class ServerSchema(SchemaNode):
             return IntPositive(_cpu_count())
         return obj.workers
 
+    def _max_workers(self, obj: Raw) -> IntPositive:
+        if obj.max_workers == "auto":
+            try:
+                return IntPositive(_cpu_count() * 5)
+            except DataException:
+                return IntPositive(64 * 10)
+        else:
+            assert isinstance(obj.max_workers, IntPositive)
+            return obj.max_workers
+
     def _validate(self) -> None:
-        try:
-            cpu_count = _cpu_count()
-            if int(self.workers) > 10 * cpu_count:
-                raise ValueError("refusing to run with more then instances 10 instances per cpu core")
-        except DataException:
-            # sometimes, we won't be able to get information about the cpu count
-            pass
+        if int(self.workers) > int(self.max_workers):
+            raise ValueError(
+                f"refusing to run with more then {self.max_workers} instances. Change the /server/max_workers property to allow for more"
+            )
 
         if self.watchdog and self.backend not in ["auto", "systemd"]:
             raise ValueError("'watchdog' can only be configured for 'systemd' backend")
