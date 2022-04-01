@@ -9,12 +9,12 @@ from knot_resolver_manager.datamodel.types import (
     CheckedPath,
     DNSRecordTypeEnum,
     DomainName,
+    IDPattern,
     InterfacePort,
     IntPositive,
     IPAddressPort,
     UncheckedPath,
 )
-from knot_resolver_manager.datamodel.types.types import IDPattern
 from knot_resolver_manager.exceptions import DataException
 from knot_resolver_manager.utils import SchemaNode
 

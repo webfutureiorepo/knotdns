@@ -2,6 +2,7 @@ from .enums import DNSRecordTypeEnum, PolicyActionEnum, PolicyFlagEnum
 from .types import (
     CheckedPath,
     DomainName,
+    IDPattern,
     Int0_512,
     Int0_65535,
     InterfaceName,
@@ -28,6 +29,7 @@ __all__ = [
     "DNSRecordTypeEnum",
     "CheckedPath",
     "DomainName",
+    "IDPattern",
     "Int0_512",
     "Int0_65535",
     "InterfaceName",
