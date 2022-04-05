@@ -9,6 +9,7 @@ from pytest import raises
 from knot_resolver_manager.datamodel.types import (
     CheckedPath,
     DomainName,
+    EscQuotesStr,
     InterfaceName,
     InterfaceOptionalPort,
     InterfacePort,
@@ -89,6 +90,31 @@ def test_checked_path():
         p: CheckedPath
 
     assert str(TestSchema({"p": "/tmp"}).p) == "/tmp"
+
+
+@pytest.mark.parametrize(
+    "val,exp",
+    [
+        ("string", "string"),
+        (2000, "2000"),
+        ('"double quotes"', r"\"double quotes\""),
+        ("'single quotes'", r"\'single quotes\'"),
+        # fmt: off
+        ('\"double quotes\"', r"\"double quotes\""),
+        ("\'single quotes\'", r"\'single quotes\'"),
+        ('\\"double quotes\\"', r'\\"double quotes\\"'),
+        ("\\'single quotes\\'", r"\\'single quotes\\'"),
+        # fmt: on
+    ],
+)
+def test_escaped_quotes_string_valid(val: Any, exp: str):
+    assert str(EscQuotesStr(val)) == exp
+
+
+@pytest.mark.parametrize("val", [1.1, False])
+def test_escaped_quotes_string_invalid(val: Any):
+    with raises(KresManagerException):
+        EscQuotesStr(val)
 
 
 @pytest.mark.parametrize(
