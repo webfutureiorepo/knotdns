@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
 
-from knot_resolver_manager.datamodel.types.base_types import IntRangeBase, PatternBase, StrBase, UnitBase
+from knot_resolver_manager.datamodel.types.base_types import EscStrBase, IntRangeBase, PatternBase, StrBase, UnitBase
 from knot_resolver_manager.exceptions import SchemaException
 from knot_resolver_manager.utils import CustomValueType
 
@@ -122,26 +122,12 @@ class IDPattern(PatternBase):
     _re = re.compile(r"^(?!-)[a-z0-9-]*[a-z0-9]+$")
 
 
-class EscQuotesStr(StrBase):
+class EscQuotesStr(EscStrBase):
     """
-    A string with escaped quotes.
+    A string that escapes quotes.
     """
 
     _esc_chars: List[str] = ["'", '"']
-
-    def __init__(self, source_value: Any, object_path: str = "/") -> None:
-        super().__init__(source_value, object_path)
-        if isinstance(source_value, (str, int)) and not isinstance(source_value, bool):
-            source_str = str(source_value)
-            for esc_char in self._esc_chars:
-                source_str = source_str.replace(esc_char, rf"\{esc_char}")
-            self._value = source_str
-        else:
-            raise SchemaException(
-                "Unexpected value for 'SecureString'."
-                f" Expected string or int, got '{source_value}' with type '{type(source_value)}'",
-                object_path,
-            )
 
 
 class InterfacePort(StrBase):

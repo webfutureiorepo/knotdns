@@ -5,8 +5,20 @@ from typing import List, Optional
 import pytest
 from pytest import raises
 
-from knot_resolver_manager.datamodel.types.base_types import IntRangeBase
+from knot_resolver_manager.datamodel.types.base_types import EscStrBase, IntRangeBase
 from knot_resolver_manager.exceptions import KresManagerException
+
+
+@pytest.mark.parametrize(
+    "esc",
+    [["'", '"'], [" ", "\t", "\n"]],
+)
+def test_esc_str_base(esc: List[str]):
+    class Test(EscStrBase):
+        _esc_chars = esc
+
+    for e in esc:
+        assert str(Test(f"{e}test")) == rf"\{e}test"
 
 
 @pytest.mark.parametrize("min,max", [(0, None), (None, 0), (1, 65535), (-65535, -1)])
