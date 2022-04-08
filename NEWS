@@ -1,6 +1,10 @@
 Knot Resolver 5.5.1 (2022-mm-dd)
 ================================
 
+Improvements
+------------
+- daemon/http: DoH now responds with proper HTTP codes (#728, !1279)
+
 Bugfixes
 --------
 - modules/dns64: fix incorrect packet writes for cached packets (#727, !1275)
