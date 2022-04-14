@@ -20,6 +20,7 @@ from knot_resolver_manager.datamodel.types import (
     IPv6Address,
     IPv6Network96,
     PortNumber,
+    RawString,
     SizeUnit,
     TimeUnit,
 )
@@ -115,6 +116,20 @@ def test_escaped_quotes_string_valid(val: Any, exp: str):
 def test_escaped_quotes_string_invalid(val: Any):
     with raises(KresManagerException):
         EscQuotesStr(val)
+
+
+@pytest.mark.parametrize(
+    "val,exp",
+    [(2000, "2000"), ("string", r"string"), ("[^i*&2@]", r"[^i*&2@]"), ('"\n"', r'"\n"')],
+)
+def test_raw_string_valid(val: Any, exp: str):
+    assert str(RawString(val)) == exp
+
+
+@pytest.mark.parametrize("val", [1.1, False])
+def test_raw_string_invalid(val: Any):
+    with raises(KresManagerException):
+        RawString(val)
 
 
 @pytest.mark.parametrize(

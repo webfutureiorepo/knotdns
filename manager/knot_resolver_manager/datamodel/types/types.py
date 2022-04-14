@@ -130,6 +130,23 @@ class EscQuotesStr(EscStrBase):
     _esc_chars: List[str] = ["'", '"']
 
 
+class RawString(StrBase):
+    """
+    A string that stores escaped unicode chars.
+    """
+
+    def __init__(self, source_value: Any, object_path: str = "/") -> None:
+        super().__init__(source_value, object_path)
+        if isinstance(source_value, (str, int)) and not isinstance(source_value, bool):
+            self._value = str(source_value).encode("unicode-escape").decode()
+        else:
+            raise SchemaException(
+                f"Unexpected value for '{type(self)}'."
+                f" Expected string, got '{source_value}' with type '{type(source_value)}'",
+                object_path,
+            )
+
+
 class InterfacePort(StrBase):
     addr: Union[None, ipaddress.IPv4Address, ipaddress.IPv6Address] = None
     if_name: Optional[InterfaceName] = None
