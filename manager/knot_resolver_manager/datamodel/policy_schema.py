@@ -3,9 +3,13 @@ from typing import List, Optional
 from knot_resolver_manager.datamodel.network_schema import AddressRenumberingSchema
 from knot_resolver_manager.datamodel.types import (
     DNSRecordTypeEnum,
+    DomainName,
+    EscQuotesString,
+    IDPattern,
     IPAddressOptionalPort,
     PolicyActionEnum,
     PolicyFlagEnum,
+    RawString,
     TimeUnit,
 )
 from knot_resolver_manager.utils import SchemaNode
@@ -21,8 +25,8 @@ class FilterSchema(SchemaNode):
     qtype: Filter based on the DNS query type.
     """
 
-    suffix: Optional[str] = None
-    pattern: Optional[str] = None
+    suffix: Optional[DomainName] = None
+    pattern: Optional[RawString] = None
     qtype: Optional[DNSRecordTypeEnum] = None
 
 
@@ -38,7 +42,7 @@ class AnswerSchema(SchemaNode):
     """
 
     rtype: DNSRecordTypeEnum
-    rdata: str
+    rdata: EscQuotesString
     ttl: TimeUnit = TimeUnit("1s")
     nodata: bool = False
 
@@ -62,9 +66,9 @@ class PolicySchema(SchemaNode):
     action: PolicyActionEnum
     priority: Optional[int] = None
     filter: Optional[FilterSchema] = None
-    views: Optional[List[str]] = None
+    views: Optional[List[IDPattern]] = None
     options: Optional[List[PolicyFlagEnum]] = None
-    message: Optional[str] = None
+    message: Optional[EscQuotesString] = None
     reroute: Optional[List[AddressRenumberingSchema]] = None
     answer: Optional[AnswerSchema] = None
     mirror: Optional[List[IPAddressOptionalPort]] = None

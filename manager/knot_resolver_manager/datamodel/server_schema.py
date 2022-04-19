@@ -9,6 +9,7 @@ from knot_resolver_manager.datamodel.types import (
     CheckedPath,
     DNSRecordTypeEnum,
     DomainName,
+    EscQuotesString,
     IDPattern,
     InterfacePort,
     IntPositive,
@@ -115,7 +116,7 @@ class ServerSchema(SchemaNode):
 
         id: IDPattern
         hostname: Optional[str] = None
-        nsid: Optional[str] = None
+        nsid: Optional[EscQuotesString] = None
         workers: Union[Literal["auto"], IntPositive] = IntPositive(1)
         use_cache_gc: bool = True
         backend: BackendEnum = "auto"
@@ -128,7 +129,7 @@ class ServerSchema(SchemaNode):
 
     id: IDPattern
     hostname: str
-    nsid: Optional[str]
+    nsid: Optional[EscQuotesString]
     workers: IntPositive
     use_cache_gc: bool
     backend: BackendEnum = "auto"

@@ -1,49 +1,55 @@
 {# Return string or table of strings #}
-{% macro string_table(table) -%}
-{%- if table is string -%}
-'{{ table|string }}'
-{%- else-%}
+{% macro string_table(input) -%}
+{%- if input is string -%}
+'{{ input|string }}'
+{%- elif input is iterable -%}
 {
-{%- for item in table -%}
+{%- for item in input -%}
 '{{ item|string }}',
 {%- endfor -%}
 }
+{%- else-%}
+'{{ input|string }}'
 {%- endif -%}
 {%- endmacro %}
 
 {# Return str2ip or table of str2ip #}
-{% macro str2ip_table(table) -%}
-{%- if table is string -%}
-kres.str2ip('{{ table|string }}')
-{%- else-%}
+{% macro str2ip_table(input) -%}
+{%- if input is string -%}
+kres.str2ip('{{ input|string }}')
+{%- elif input is iterable -%}
 {
-{%- for item in table -%}
+{%- for item in input -%}
 kres.str2ip('{{ item|string }}'),
 {%- endfor -%}
 }
+{%- else-%}
+kres.str2ip('{{ input|string }}')
 {%- endif -%}
 {%- endmacro %}
 
 {# Return qtype or table of qtype #}
-{% macro qtype_table(table) -%}
-{%- if table is string -%}
-kres.type.{{ table|string }}
-{%- else-%}
+{% macro qtype_table(input) -%}
+{%- if input is string -%}
+kres.type.{{ input|string }}
+{%- elif input is iterable -%}
 {
-{%- for item in table -%}
+{%- for item in input -%}
 kres.type.{{ item|string }},
 {%- endfor -%}
 }
+{%- else-%}
+kres.type.{{ input|string }}
 {%- endif -%}
 {%- endmacro %}
 
 {# Return server address or table of server addresses #}
-{% macro servers_table(servers) -%}
-{%- if servers is string -%}
-'{{ servers|string }}'
-{%- else-%}
+{% macro servers_table(input) -%}
+{%- if input is string -%}
+'{{ input|string }}'
+{%- elif input is iterable -%}
 {
-{%- for item in servers -%}
+{%- for item in input -%}
 {%- if item.address -%}
 '{{ item.address|string }}',
 {%- else -%}
@@ -51,13 +57,15 @@ kres.type.{{ item|string }},
 {%- endif -%}
 {%- endfor -%}
 }
+{%- else-%}
+'{{ input|string }}'
 {%- endif -%}
 {%- endmacro %}
 
 {# Return server address or table of server addresses #}
-{% macro tls_servers_table(servers) -%}
+{% macro tls_servers_table(input) -%}
 {
-{%- for item in servers -%}
+{%- for item in input -%}
 {%- if item.address -%}
 {'{{ item.address|string }}',{{ tls_server_auth(item) }}},
 {%- else -%}
@@ -67,23 +75,25 @@ kres.type.{{ item|string }},
 }
 {%- endmacro %}
 
-{% macro tls_server_auth(server) -%}
-{%- if server.hostname -%}
-hostname='{{ server.hostname|string }}',
+{% macro tls_server_auth(input) -%}
+{%- if input.hostname -%}
+hostname='{{ input.hostname|string }}',
 {%- endif -%}
-{%- if server.ca_file -%}
-ca_file='{{ server.ca_file|string }}',
+{%- if input.ca_file -%}
+ca_file='{{ input.ca_file|string }}',
 {%- endif -%}
-{%- if server.pin_sha256 -%}
+{%- if input.pin_sha256 -%}
 pin_sha256=
-{%- if server.pin_sha256 is string -%}
-'{{ server.pin_sha256|string }}',
-{%- else -%}
+{%- if input.pin_sha256 is string -%}
+'{{ input.pin_sha256|string }}',
+{%- elif input.pin_sha256 is iterable -%}
 {
-{%- for pin in server.pin_sha256 -%}
+{%- for pin in input.pin_sha256 -%}
 '{{ pin|string }}',
 {%- endfor -%}
 }
+{%- else -%}
+'{{ input.pin_sha256|string }}',
 {%- endif -%}
 {%- endif -%}
 {%- endmacro %}
