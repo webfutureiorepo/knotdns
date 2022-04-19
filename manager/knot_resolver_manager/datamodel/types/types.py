@@ -122,7 +122,7 @@ class IDPattern(PatternBase):
     _re = re.compile(r"^(?!-)[a-z0-9-]*[a-z0-9]+$")
 
 
-class EscQuotesStr(EscStrBase):
+class EscQuotesString(EscStrBase):
     """
     A string that escapes quotes.
     """
@@ -138,7 +138,10 @@ class RawString(StrBase):
     def __init__(self, source_value: Any, object_path: str = "/") -> None:
         super().__init__(source_value, object_path)
         if isinstance(source_value, (str, int)) and not isinstance(source_value, bool):
-            self._value = str(source_value).encode("unicode-escape").decode()
+            esc = str(source_value).encode("unicode-escape").decode()
+            for esc_char in ["'", '"']:
+                esc = esc.replace(esc_char, rf"\{esc_char}")
+            self._value = esc
         else:
             raise SchemaException(
                 f"Unexpected value for '{type(self)}'."

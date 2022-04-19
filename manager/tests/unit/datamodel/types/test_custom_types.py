@@ -9,7 +9,7 @@ from pytest import raises
 from knot_resolver_manager.datamodel.types import (
     CheckedPath,
     DomainName,
-    EscQuotesStr,
+    EscQuotesString,
     InterfaceName,
     InterfaceOptionalPort,
     InterfacePort,
@@ -108,19 +108,31 @@ def test_checked_path():
         # fmt: on
     ],
 )
-def test_escaped_quotes_string_valid(val: Any, exp: str):
-    assert str(EscQuotesStr(val)) == exp
+def test_esc_quotes_string_valid(val: Any, exp: str):
+    assert str(EscQuotesString(val)) == exp
 
 
 @pytest.mark.parametrize("val", [1.1, False])
-def test_escaped_quotes_string_invalid(val: Any):
+def test_esc_quotes_string_invalid(val: Any):
     with raises(KresManagerException):
-        EscQuotesStr(val)
+        EscQuotesString(val)
 
 
 @pytest.mark.parametrize(
     "val,exp",
-    [(2000, "2000"), ("string", r"string"), ("[^i*&2@]", r"[^i*&2@]"), ('"\n"', r'"\n"')],
+    [
+        (2000, "2000"),
+        ("string", r"string"),
+        ("[^i*&2@]\t", r"[^i*&2@]\t"),
+        # fmt: off
+        ("\"\n\"", r'\"\n\"'),
+        ("\'\n\'", r'\'\n\''),
+        ('\'\n\'', r'\'\n\''),
+        ('\"\n\"', r'\"\n\"'),
+        ("'\n'", r'\'\n\''),
+        ('"\n"', r'\"\n\"'),
+        # fmt: on
+    ],
 )
 def test_raw_string_valid(val: Any, exp: str):
     assert str(RawString(val)) == exp
