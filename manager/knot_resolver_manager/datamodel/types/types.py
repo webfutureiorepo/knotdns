@@ -130,18 +130,15 @@ class EscQuotesString(EscStrBase):
     _esc_chars: List[str] = ["'", '"']
 
 
-class RawString(StrBase):
+class RawString(EscQuotesString):
     """
     A string that stores escaped unicode chars.
     """
 
     def __init__(self, source_value: Any, object_path: str = "/") -> None:
-        super().__init__(source_value, object_path)
         if isinstance(source_value, (str, int)) and not isinstance(source_value, bool):
             esc = str(source_value).encode("unicode-escape").decode()
-            for esc_char in ["'", '"']:
-                esc = esc.replace(esc_char, rf"\{esc_char}")
-            self._value = esc
+            super().__init__(esc, object_path)
         else:
             raise SchemaException(
                 f"Unexpected value for '{type(self)}'."
