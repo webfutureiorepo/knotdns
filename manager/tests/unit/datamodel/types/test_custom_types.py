@@ -19,6 +19,7 @@ from knot_resolver_manager.datamodel.types import (
     IPv4Address,
     IPv6Address,
     IPv6Network96,
+    PinSha256,
     PortNumber,
     RawString,
     SizeUnit,
@@ -91,6 +92,31 @@ def test_checked_path():
         p: CheckedPath
 
     assert str(TestSchema({"p": "/tmp"}).p) == "/tmp"
+
+
+@pytest.mark.parametrize(
+    "val",
+    [
+        "YmE3ODE2YmY4ZjAx+2ZlYTQxNDE0MGRlNWRhZTIyMjNiMDAzNjFhMzk/MTc3YTljYjQxMGZmNjFmMjAwMTVhZA==",
+        "OTJmODU3ZDMyOWMwOWNlNTU4Y2M0YWNjMjI5NWE2NWJlMzY4MzRmMzY3NGU3NDAwNTI1YjMxZTMxYTgzMzQwMQ==",
+    ],
+)
+def test_pin_sha256_valid(val: str):
+    o = PinSha256(val)
+    assert str(o) == val
+
+
+@pytest.mark.parametrize(
+    "val",
+    [
+        "!YmE3ODE2YmY4ZjAxY2ZlYTQxNDE0MGRlNWRhZTIyMjNiMDAzNjFhMzk2MTc3YTljjQxMGZmNjFmMjAwMTVhZA==",
+        "OTJmODU3ZDMyOWMwOWNlNTU4Y2M0YWNjMjI5NWE2NWJlMzY4MzRmMzY3NGU3NDAwNTI1YjMxZTMxYTgzMzQwMQ",
+        "YmFzZTY0IQ",
+    ],
+)
+def test_pin_sha256_invalid(val: str):
+    with raises(KresManagerException):
+        PinSha256(val)
 
 
 @pytest.mark.parametrize(

@@ -5,8 +5,8 @@ from knot_resolver_manager.datamodel.types import (
     DomainName,
     IDPattern,
     IPAddressOptionalPort,
+    PinSha256,
     PolicyFlagEnum,
-    RawString,
 )
 from knot_resolver_manager.utils import SchemaNode
 
@@ -23,7 +23,7 @@ class ForwardServerSchema(SchemaNode):
     """
 
     address: IPAddressOptionalPort
-    pin_sha256: Optional[Union[RawString, List[RawString]]] = None
+    pin_sha256: Optional[Union[PinSha256, List[PinSha256]]] = None
     hostname: Optional[DomainName] = None
     ca_file: Optional[CheckedPath] = None
 
